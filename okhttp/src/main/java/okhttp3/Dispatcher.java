@@ -40,11 +40,12 @@ import okhttp3.internal.Util;
 public final class Dispatcher {
     private int maxRequests = 64;
     private int maxRequestsPerHost = 5;
+
     private @Nullable
     Runnable idleCallback;
 
     /**
-     * Executes calls. Created lazily.
+     * 线程池，延迟初始化
      */
     private @Nullable
     volatile ExecutorService executorService;
@@ -71,15 +72,20 @@ public final class Dispatcher {
     public Dispatcher() {
     }
 
-    //Double-Check提高性能，使用volatile防止指令重排序
+    //可以使用Double-Check提高性能，使用volatile防止指令重排序
     public ExecutorService executorService() {
-        if (executorService == null) {
-            synchronized (this){
-                if (executorService == null){
-                    executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
-                            60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-                            Util.threadFactory("OkHttp Dispatcher", false));
-                }
+        if (executorService != null) {
+            return executorService;
+        }
+
+        synchronized (this) {
+            if (executorService == null) {
+                //参数1：核心线程，永久存活在线程池中
+                //参数2：最大线程数
+                //参数3：非核心线程空闲后的存活时间
+                executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                        60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+                        Util.threadFactory("OkHttp Dispatcher", false));
             }
         }
         return executorService;
@@ -143,6 +149,9 @@ public final class Dispatcher {
         this.idleCallback = idleCallback;
     }
 
+    /**
+     * 任务入队，如果执行任务队列到达最大限度就将任务防止等待任务队列
+     */
     synchronized void enqueue(AsyncCall call) {
         if (runningAsyncCalls.size() < maxRequests && runningCallsForHost(call) < maxRequestsPerHost) {
             runningAsyncCalls.add(call);
@@ -170,6 +179,9 @@ public final class Dispatcher {
         }
     }
 
+    /**
+     * 将 等待任务队列{@link #readyAsyncCalls} 中的异步任务放在 执行任务队列{@link #runningAsyncCalls} 中
+     */
     private void promoteCalls() {
         if (runningAsyncCalls.size() >= maxRequests) return; // Already running max capacity.
         if (readyAsyncCalls.isEmpty()) return; // No ready calls to promote.
@@ -223,13 +235,14 @@ public final class Dispatcher {
     /**
      * 从任务队列中移除指定的任务
      *
-     * @param calls 任务队列
-     * @param call 需要移除的任务
+     * @param calls        任务队列
+     * @param call         需要移除的任务
      * @param promoteCalls 是否为异步任务
      */
     private <T> void finished(Deque<T> calls, T call, boolean promoteCalls) {
         int runningCallsCount;
         Runnable idleCallback;
+        //因为任务队列不是线程安全的，所以这里使用Synchronized进行处理
         synchronized (this) {
             if (!calls.remove(call)) throw new AssertionError("Call wasn't in-flight!");
             if (promoteCalls) promoteCalls();
@@ -269,6 +282,8 @@ public final class Dispatcher {
         return readyAsyncCalls.size();
     }
 
+    /** 同步和异步任务的总和
+     */
     public synchronized int runningCallsCount() {
         return runningAsyncCalls.size() + runningSyncCalls.size();
     }

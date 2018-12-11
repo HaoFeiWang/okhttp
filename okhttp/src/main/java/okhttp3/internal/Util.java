@@ -192,7 +192,7 @@ public final class Util {
     return Collections.unmodifiableList(new ArrayList<>(list));
   }
 
-  /** Returns an immutable list containing {@code elements}. */
+  /** 返回一个不可变的List */
   public static <T> List<T> immutableList(T... elements) {
     return Collections.unmodifiableList(Arrays.asList(elements.clone()));
   }

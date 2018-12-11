@@ -57,16 +57,16 @@ import static okhttp3.internal.Util.checkDuration;
 
 /**
  * Call的工厂
- *
+ * <p>
  * {@link Call} {@link Request}
  * ﻿OkHttpClient client = new OkHttpClient();
  * Call call = client.newCall(request);
- *
  */
 public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory {
+    //协议（final保证对象不可变，unmodifiableList保证List元素不可变）
     static final List<Protocol> DEFAULT_PROTOCOLS = Util.immutableList(
             Protocol.HTTP_2, Protocol.HTTP_1_1);
-
+    //连接方式
     static final List<ConnectionSpec> DEFAULT_CONNECTION_SPECS = Util.immutableList(
             ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT);
 
@@ -153,8 +153,12 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
     Proxy proxy;
     final List<Protocol> protocols;
     final List<ConnectionSpec> connectionSpecs;
+
+    //应用拦截器
     final List<Interceptor> interceptors;
+    //网络拦截器
     final List<Interceptor> networkInterceptors;
+
     final EventListener.Factory eventListenerFactory;
     final ProxySelector proxySelector;
     final CookieJar cookieJar;
@@ -176,9 +180,11 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
     final boolean followSslRedirects;
     final boolean followRedirects;
     final boolean retryOnConnectionFailure;
+
     final int connectTimeout;
     final int readTimeout;
     final int writeTimeout;
+
     final int pingInterval;
 
     public OkHttpClient() {
