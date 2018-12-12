@@ -66,7 +66,8 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
     //协议（final保证对象不可变，unmodifiableList保证List元素不可变）
     static final List<Protocol> DEFAULT_PROTOCOLS = Util.immutableList(
             Protocol.HTTP_2, Protocol.HTTP_1_1);
-    //连接方式
+
+    //连接方式：MODERN_TLS : HTTPS连接方式、CLEARTEXT: HTTP连接方式
     static final List<ConnectionSpec> DEFAULT_CONNECTION_SPECS = Util.immutableList(
             ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT);
 
@@ -164,21 +165,26 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
     final CookieJar cookieJar;
     final @Nullable
     Cache cache;
-    final @Nullable
-    InternalCache internalCache;
+
+    final @Nullable InternalCache internalCache;
+    //Socket工厂
     final SocketFactory socketFactory;
-    final @Nullable
-    SSLSocketFactory sslSocketFactory;
-    final @Nullable
-    CertificateChainCleaner certificateChainCleaner;
+    //SSLSocket工厂，用于认证证书
+    final @Nullable SSLSocketFactory sslSocketFactory;
+    final @Nullable CertificateChainCleaner certificateChainCleaner;
+    //域名认证
     final HostnameVerifier hostnameVerifier;
+    //证书
     final CertificatePinner certificatePinner;
+    //代理作者
     final Authenticator proxyAuthenticator;
+    //作者
     final Authenticator authenticator;
     final ConnectionPool connectionPool;
     final Dns dns;
     final boolean followSslRedirects;
     final boolean followRedirects;
+    //失败重连
     final boolean retryOnConnectionFailure;
 
     final int connectTimeout;

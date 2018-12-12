@@ -214,7 +214,7 @@ final class RealCall implements Call {
         //负责和服务器建立连接，连接池等
         interceptors.add(new ConnectInterceptor(client));
 
-        //添加网络拦截器
+        //如果不是WebSocket方式则添加网络拦截器
         if (!forWebSocket) {
             interceptors.addAll(client.networkInterceptors());
         }

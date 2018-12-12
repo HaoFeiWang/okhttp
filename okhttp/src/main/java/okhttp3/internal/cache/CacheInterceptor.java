@@ -52,12 +52,13 @@ public final class CacheInterceptor implements Interceptor {
   }
 
   @Override public Response intercept(Chain chain) throws IOException {
-    Response cacheCandidate = cache != null
-        ? cache.get(chain.request())
-        : null;
+
+    //获取缓存，OkHttClient如果不设置internalCache，则cache为null
+    Response cacheCandidate = cache != null ? cache.get(chain.request()) : null;
 
     long now = System.currentTimeMillis();
 
+    //创建缓存策略（强制缓存、对比缓存）
     CacheStrategy strategy = new CacheStrategy.Factory(now, chain.request(), cacheCandidate).get();
     Request networkRequest = strategy.networkRequest;
     Response cacheResponse = strategy.cacheResponse;
@@ -90,8 +91,10 @@ public final class CacheInterceptor implements Interceptor {
           .build();
     }
 
+
     Response networkResponse = null;
     try {
+      //执行下一个拦截器链
       networkResponse = chain.proceed(networkRequest);
     } finally {
       // If we're crashing on I/O or otherwise, don't leak the cache body.

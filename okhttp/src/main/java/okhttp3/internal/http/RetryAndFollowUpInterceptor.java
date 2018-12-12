@@ -105,12 +105,15 @@ public final class RetryAndFollowUpInterceptor implements Interceptor {
 
     @Override
     public Response intercept(Chain chain) throws IOException {
+
         Request request = chain.request();
         RealInterceptorChain realChain = (RealInterceptorChain) chain;
+
+        //通过OkHttpClient创建的RealCall，在整个拦截器链中都不会改变
         Call call = realChain.call();
         EventListener eventListener = realChain.eventListener();
 
-        //网络链接的传输流
+        //网络链接的传输流：用来建立执行HTTP请求所需网络设施的组件
         StreamAllocation streamAllocation = new StreamAllocation(client.connectionPool(),
                 createAddress(request.url()), call, eventListener, callStackTrace);
         this.streamAllocation = streamAllocation;
@@ -118,6 +121,7 @@ public final class RetryAndFollowUpInterceptor implements Interceptor {
         int followUpCount = 0;
         Response priorResponse = null;
         while (true) {
+            //判断该请求是否已取消
             if (canceled) {
                 streamAllocation.release();
                 throw new IOException("Canceled");
@@ -126,6 +130,7 @@ public final class RetryAndFollowUpInterceptor implements Interceptor {
             Response response;
             boolean releaseConnection = true;
             try {
+                //执行下一个拦截器
                 response = realChain.proceed(request, streamAllocation, null, null);
                 releaseConnection = false;
             } catch (RouteException e) {
@@ -158,12 +163,15 @@ public final class RetryAndFollowUpInterceptor implements Interceptor {
                         .build();
             }
 
+            //根据响应码判断客户端是否超时、或者发生重定向
             Request followUp = followUpRequest(response, streamAllocation.route());
 
             if (followUp == null) {
                 if (!forWebSocket) {
                     streamAllocation.release();
                 }
+
+                //返回结果
                 return response;
             }
 
@@ -279,15 +287,14 @@ public final class RetryAndFollowUpInterceptor implements Interceptor {
         final String method = userResponse.request().method();
         switch (responseCode) {
             case HTTP_PROXY_AUTH:
-                Proxy selectedProxy = route != null
-                        ? route.proxy()
-                        : client.proxy();
+                Proxy selectedProxy = route != null ? route.proxy() : client.proxy();
                 if (selectedProxy.type() != Proxy.Type.HTTP) {
                     throw new ProtocolException("Received HTTP_PROXY_AUTH (407) code while not using proxy");
                 }
                 return client.proxyAuthenticator().authenticate(route, userResponse);
 
             case HTTP_UNAUTHORIZED:
+                //身份验证失败
                 return client.authenticator().authenticate(route, userResponse);
 
             case HTTP_PERM_REDIRECT:
@@ -298,6 +305,7 @@ public final class RetryAndFollowUpInterceptor implements Interceptor {
                     return null;
                 }
                 // fall-through
+                //重定向
             case HTTP_MULT_CHOICE:
             case HTTP_MOVED_PERM:
             case HTTP_MOVED_TEMP:
@@ -342,7 +350,7 @@ public final class RetryAndFollowUpInterceptor implements Interceptor {
 
                 return requestBuilder.url(url).build();
 
-            case HTTP_CLIENT_TIMEOUT:
+            case HTTP_CLIENT_TIMEOUT: //客户端超时
                 // 408's are rare in practice, but some servers like HAProxy use this response code. The
                 // spec says that we may repeat the request without modifications. Modern browsers also
                 // repeat the request (even non-idempotent ones.)
@@ -367,7 +375,7 @@ public final class RetryAndFollowUpInterceptor implements Interceptor {
 
                 return userResponse.request();
 
-            case HTTP_UNAVAILABLE:
+            case HTTP_UNAVAILABLE: //服务器当前无法处理请求
                 if (userResponse.priorResponse() != null
                         && userResponse.priorResponse().code() == HTTP_UNAVAILABLE) {
                     // We attempted to retry and got another timeout. Give up.

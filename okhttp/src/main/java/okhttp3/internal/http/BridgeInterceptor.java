@@ -50,11 +50,14 @@ public final class BridgeInterceptor implements Interceptor {
 
         RequestBody body = userRequest.body();
         if (body != null) {
+            //添加Content-Type请求头
             MediaType contentType = body.contentType();
             if (contentType != null) {
                 requestBuilder.header("Content-Type", contentType.toString());
             }
 
+            //添加Content-Length请求头
+            //或者Transfer-Encoding：chunked请求头（分块传输）
             long contentLength = body.contentLength();
             if (contentLength != -1) {
                 requestBuilder.header("Content-Length", Long.toString(contentLength));
@@ -65,38 +68,44 @@ public final class BridgeInterceptor implements Interceptor {
             }
         }
 
+        //添加Host请求头
         if (userRequest.header("Host") == null) {
             requestBuilder.header("Host", hostHeader(userRequest.url(), false));
         }
 
+        //添加Connection：Keep-Alive请求头，保持长连接
         if (userRequest.header("Connection") == null) {
             requestBuilder.header("Connection", "Keep-Alive");
         }
 
-        // If we add an "Accept-Encoding: gzip" header field we're responsible for also decompressing
-        // the transfer stream.
+
+        //添加Accept-Encoding: gzip请求头（声明客户端支持的编码格式），即使没有添加该请求头也是会对响应进行解压缩
+        //Content-Encoding是实际采用的编码方式
         boolean transparentGzip = false;
         if (userRequest.header("Accept-Encoding") == null && userRequest.header("Range") == null) {
             transparentGzip = true;
             requestBuilder.header("Accept-Encoding", "gzip");
         }
 
+        //添加Cookie请求头
         List<Cookie> cookies = cookieJar.loadForRequest(userRequest.url());
         if (!cookies.isEmpty()) {
             requestBuilder.header("Cookie", cookieHeader(cookies));
         }
 
+        //添加User-Agent：okhttp/${project.version} 请求头
         if (userRequest.header("User-Agent") == null) {
             requestBuilder.header("User-Agent", Version.userAgent());
         }
 
+        //执行下一个拦截器
         Response networkResponse = chain.proceed(requestBuilder.build());
 
+        //Cookie处理
         HttpHeaders.receiveHeaders(cookieJar, userRequest.url(), networkResponse.headers());
+        Response.Builder responseBuilder = networkResponse.newBuilder().request(userRequest);
 
-        Response.Builder responseBuilder = networkResponse.newBuilder()
-                .request(userRequest);
-
+        //Content-Encoding是实际采用的压缩方式，解压缩body
         if (transparentGzip
                 && "gzip".equalsIgnoreCase(networkResponse.header("Content-Encoding"))
                 && HttpHeaders.hasBody(networkResponse)) {

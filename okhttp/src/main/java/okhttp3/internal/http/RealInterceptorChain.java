@@ -149,7 +149,7 @@ public final class RealInterceptorChain implements Interceptor.Chain {
                     + " must call proceed() exactly once");
         }
 
-        //获取下一个拦截器
+        //创建下一个拦截器链
         RealInterceptorChain next = new RealInterceptorChain(interceptors, streamAllocation, httpCodec,
                 connection, index + 1, request, call, eventListener, connectTimeout, readTimeout,
                 writeTimeout);
