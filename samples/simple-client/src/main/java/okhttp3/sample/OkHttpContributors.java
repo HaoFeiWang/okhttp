@@ -38,7 +38,7 @@ public class OkHttpContributors {
         .build();
 
     // Execute the request and retrieve the response.
-    Call call = client.newCall(request);
+    Call call = client.newCall(null);
 
     //异步
 //    call.enqueue(new Callback() {

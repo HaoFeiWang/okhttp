@@ -142,6 +142,7 @@ public final class CacheStrategy {
       this.request = request;
       this.cacheResponse = cacheResponse;
 
+      //获取到缓存
       if (cacheResponse != null) {
         this.sentRequestMillis = cacheResponse.sentRequestAtMillis();
         this.receivedResponseMillis = cacheResponse.receivedResponseAtMillis();
@@ -152,14 +153,14 @@ public final class CacheStrategy {
           if ("Date".equalsIgnoreCase(fieldName)) {
             servedDate = HttpDate.parse(value);
             servedDateString = value;
-          } else if ("Expires".equalsIgnoreCase(fieldName)) {
+          } else if ("Expires".equalsIgnoreCase(fieldName)) {//服务器返回的缓存到期时间
             expires = HttpDate.parse(value);
-          } else if ("Last-Modified".equalsIgnoreCase(fieldName)) {
+          } else if ("Last-Modified".equalsIgnoreCase(fieldName)) {//第一次请求时，服务器返回的资源最后修改时间
             lastModified = HttpDate.parse(value);
             lastModifiedString = value;
-          } else if ("ETag".equalsIgnoreCase(fieldName)) {
+          } else if ("ETag".equalsIgnoreCase(fieldName)) {//第一次请求时，服务器返回的资源唯一标识
             etag = value;
-          } else if ("Age".equalsIgnoreCase(fieldName)) {
+          } else if ("Age".equalsIgnoreCase(fieldName)) { //缓存的年龄
             ageSeconds = HttpHeaders.parseSeconds(value, -1);
           }
         }
@@ -182,7 +183,7 @@ public final class CacheStrategy {
 
     /** Returns a strategy to use assuming the request can use the network. */
     private CacheStrategy getCandidate() {
-      // No cached response.
+      // 没有缓存.
       if (cacheResponse == null) {
         return new CacheStrategy(request, null);
       }
