@@ -67,6 +67,12 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
     static final List<Protocol> DEFAULT_PROTOCOLS = Util.immutableList(
             Protocol.HTTP_2, Protocol.HTTP_1_1);
 
+    /*
+     * 默认的连接规范
+     * 1.MODERN_TLS 是连接到最新的HTTPS服务器的安全配置。
+     * 2.COMPATIBEL_TLS 是连接到过时的HTTPS服务器的安全配置。
+     * 3.CLEARTEXT 是用于http://开头的URL的非安全配置。
+     */
     static final List<ConnectionSpec> DEFAULT_CONNECTION_SPECS = Util.immutableList(
             ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT);
 
