@@ -53,7 +53,7 @@ public final class CacheInterceptor implements Interceptor {
 
   @Override public Response intercept(Chain chain) throws IOException {
 
-    //获取缓存，OkHttClient如果不设置internalCache，则cache为null
+    //获取缓存，OkHttClient如果不设置internalCache，则 cache为null
     Response cacheCandidate = cache != null ? cache.get(chain.request()) : null;
 
     long now = System.currentTimeMillis();
