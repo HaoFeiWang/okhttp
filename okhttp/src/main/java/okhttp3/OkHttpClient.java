@@ -453,6 +453,7 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
         int pingInterval;
 
         public Builder() {
+            //任务调度器
             dispatcher = new Dispatcher();
             protocols = DEFAULT_PROTOCOLS;
             connectionSpecs = DEFAULT_CONNECTION_SPECS;
