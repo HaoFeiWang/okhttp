@@ -41,7 +41,9 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static okhttp3.internal.Util.closeQuietly;
 import static okhttp3.internal.Util.discard;
 
-/** Serves requests from the cache and writes responses to the cache. */
+/**
+ * 缓存拦截器：用于将服务器响应数据进行缓存，以及将缓存数据作为响应返回
+ */
 public final class CacheInterceptor implements Interceptor {
   final InternalCache cache;
 

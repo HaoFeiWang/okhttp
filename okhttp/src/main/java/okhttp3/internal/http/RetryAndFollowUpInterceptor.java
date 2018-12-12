@@ -59,8 +59,9 @@ import static okhttp3.internal.http.StatusLine.HTTP_TEMP_REDIRECT;
  */
 public final class RetryAndFollowUpInterceptor implements Interceptor {
     /**
-     * How many redirects and auth challenges should we attempt? Chrome follows 21 redirects; Firefox,
-     * curl, and wget follow 20; Safari follows 16; and HTTP/1.0 recommends 5.
+     * 重试的最大次数
+     * Chrome follows 21 redirects; Firefox,curl, and wget follow 20;
+     * Safari follows 16; and HTTP/1.0 recommends 5.
      */
     private static final int MAX_FOLLOW_UPS = 20;
 
@@ -109,6 +110,7 @@ public final class RetryAndFollowUpInterceptor implements Interceptor {
         Call call = realChain.call();
         EventListener eventListener = realChain.eventListener();
 
+        //网络链接的传输流
         StreamAllocation streamAllocation = new StreamAllocation(client.connectionPool(),
                 createAddress(request.url()), call, eventListener, callStackTrace);
         this.streamAllocation = streamAllocation;
