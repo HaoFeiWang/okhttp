@@ -211,7 +211,7 @@ final class RealCall implements Call {
         interceptors.add(new BridgeInterceptor(client.cookieJar()));
         //缓存相关的过滤器，负责读取缓存直接返回、更新缓存
         interceptors.add(new CacheInterceptor(client.internalCache()));
-        //负责和服务器建立连接，连接池等
+        //负责和服务器建立连接，连接池等（只是建立连接）
         interceptors.add(new ConnectInterceptor(client));
 
         //如果不是WebSocket方式则添加网络拦截器

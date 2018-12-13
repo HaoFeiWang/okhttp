@@ -51,6 +51,7 @@ public final class CallServerInterceptor implements Interceptor {
         long sentRequestMillis = System.currentTimeMillis();
 
         realChain.eventListener().requestHeadersStart(realChain.call());
+        //写入请求行、请求头、空行
         httpCodec.writeRequestHeaders(request);
         realChain.eventListener().requestHeadersEnd(realChain.call(), request);
 
@@ -65,6 +66,7 @@ public final class CallServerInterceptor implements Interceptor {
                 responseBuilder = httpCodec.readResponseHeaders(true);
             }
 
+            //开始写入请求体
             if (responseBuilder == null) {
                 // Write the request body if the "Expect: 100-continue" expectation was met.
                 realChain.eventListener().requestBodyStart(realChain.call());

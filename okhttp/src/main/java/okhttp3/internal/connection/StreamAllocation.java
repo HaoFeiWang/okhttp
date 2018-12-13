@@ -104,15 +104,21 @@ public final class StreamAllocation {
 
   public HttpCodec newStream(
       OkHttpClient client, Interceptor.Chain chain, boolean doExtensiveHealthChecks) {
+
+    //连接、读、写超时的时间
     int connectTimeout = chain.connectTimeoutMillis();
     int readTimeout = chain.readTimeoutMillis();
     int writeTimeout = chain.writeTimeoutMillis();
+
     int pingIntervalMillis = client.pingIntervalMillis();
+    //是否允许重试
     boolean connectionRetryEnabled = client.retryOnConnectionFailure();
 
     try {
+      //获取一个健康可用的连接
       RealConnection resultConnection = findHealthyConnection(connectTimeout, readTimeout,
           writeTimeout, pingIntervalMillis, connectionRetryEnabled, doExtensiveHealthChecks);
+      //获取Http编解码器，针对请求编码，针对响应解码
       HttpCodec resultCodec = resultConnection.newCodec(client, chain, this);
 
       synchronized (connectionPool) {
@@ -125,6 +131,7 @@ public final class StreamAllocation {
   }
 
   /**
+   * 寻找一个健康的连接
    * Finds a connection and returns it if it is healthy. If it is unhealthy the process is repeated
    * until a healthy connection is found.
    */
@@ -165,6 +172,7 @@ public final class StreamAllocation {
     Connection releasedConnection;
     Socket toClose;
     synchronized (connectionPool) {
+
       if (released) throw new IllegalStateException("released");
       if (codec != null) throw new IllegalStateException("codec != null");
       if (canceled) throw new IOException("Canceled");

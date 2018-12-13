@@ -214,11 +214,12 @@ public final class CacheControl {
           }
         }
 
-        if ("no-cache".equalsIgnoreCase(directive)) {
+        //Cache-Control头的值
+        if ("no-cache".equalsIgnoreCase(directive)) {//no-cache 可以在本地或代理服务器缓存，但是需要使用对比缓存来验证缓存数据
           noCache = true;
-        } else if ("no-store".equalsIgnoreCase(directive)) {
+        } else if ("no-store".equalsIgnoreCase(directive)) {//no-store 禁用缓存，本地和代理服务器都不缓冲，每次都从服务器获取
           noStore = true;
-        } else if ("max-age".equalsIgnoreCase(directive)) {
+        } else if ("max-age".equalsIgnoreCase(directive)) { //缓存的内容将在 max-age 秒后失效
           maxAgeSeconds = HttpHeaders.parseSeconds(parameter, -1);
         } else if ("s-maxage".equalsIgnoreCase(directive)) {
           sMaxAgeSeconds = HttpHeaders.parseSeconds(parameter, -1);

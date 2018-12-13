@@ -127,6 +127,7 @@ public final class Http1Codec implements HttpCodec {
   @Override public void writeRequestHeaders(Request request) throws IOException {
     String requestLine = RequestLine.get(
         request, streamAllocation.connection().route().proxy().type());
+    System.out.println("request line = "+requestLine);
     writeRequest(request.headers(), requestLine);
   }
 
@@ -169,13 +170,16 @@ public final class Http1Codec implements HttpCodec {
   /** Returns bytes of a request header for sending on an HTTP transport. */
   public void writeRequest(Headers headers, String requestLine) throws IOException {
     if (state != STATE_IDLE) throw new IllegalStateException("state: " + state);
+    //请求行
     sink.writeUtf8(requestLine).writeUtf8("\r\n");
     for (int i = 0, size = headers.size(); i < size; i++) {
+      //发送请求头
       sink.writeUtf8(headers.name(i))
           .writeUtf8(": ")
           .writeUtf8(headers.value(i))
           .writeUtf8("\r\n");
     }
+    //发送空行
     sink.writeUtf8("\r\n");
     state = STATE_OPEN_REQUEST_BODY;
   }

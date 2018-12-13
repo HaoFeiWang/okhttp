@@ -126,6 +126,7 @@ public class Platform {
 
   public void connectSocket(Socket socket, InetSocketAddress address,
       int connectTimeout) throws IOException {
+    System.out.println("connect address = "+address);
     socket.connect(address, connectTimeout);
   }
 

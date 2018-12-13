@@ -471,6 +471,8 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
             certificatePinner = CertificatePinner.DEFAULT;
             proxyAuthenticator = Authenticator.NONE;
             authenticator = Authenticator.NONE;
+
+            //线程池
             connectionPool = new ConnectionPool();
             dns = Dns.SYSTEM;
             followSslRedirects = true;

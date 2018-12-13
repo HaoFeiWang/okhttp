@@ -59,6 +59,8 @@ public final class CacheInterceptor implements Interceptor {
     long now = System.currentTimeMillis();
 
     //创建缓存策略（强制缓存、对比缓存）
+    //如果使用强制缓存，且缓存命中，则将request置为null
+    //如果使用对比缓存，则会增加If-None-Match 或者 If-Modified-Since请求头
     CacheStrategy strategy = new CacheStrategy.Factory(now, chain.request(), cacheCandidate).get();
     Request networkRequest = strategy.networkRequest;
     Response cacheResponse = strategy.cacheResponse;
@@ -84,7 +86,7 @@ public final class CacheInterceptor implements Interceptor {
           .build();
     }
 
-    // If we don't need the network, we're done.
+    //使用强制缓存，且缓存命中时
     if (networkRequest == null) {
       return cacheResponse.newBuilder()
           .cacheResponse(stripBody(cacheResponse))
@@ -103,7 +105,7 @@ public final class CacheInterceptor implements Interceptor {
       }
     }
 
-    // If we have a cache response too, then we're doing a conditional get.
+    //如果缓存不为空，且响应码为304，则对比缓存命中
     if (cacheResponse != null) {
       if (networkResponse.code() == HTTP_NOT_MODIFIED) {
         Response response = cacheResponse.newBuilder()

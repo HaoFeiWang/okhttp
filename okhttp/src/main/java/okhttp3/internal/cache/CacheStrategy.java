@@ -189,6 +189,7 @@ public final class CacheStrategy {
       }
 
       // Drop the cached response if it's missing a required handshake.
+      // 如果缺少所需的握手，则删除缓存的响应
       if (request.isHttps() && cacheResponse.handshake() == null) {
         return new CacheStrategy(request, null);
       }
@@ -244,13 +245,13 @@ public final class CacheStrategy {
       String conditionName;
       String conditionValue;
       if (etag != null) {
-        conditionName = "If-None-Match";
+        conditionName = "If-None-Match";  //再次请求时带上服务器上次返回时带的唯一标识
         conditionValue = etag;
       } else if (lastModified != null) {
-        conditionName = "If-Modified-Since";
+        conditionName = "If-Modified-Since"; //再次请求时告诉服务器资源最后的修改时间
         conditionValue = lastModifiedString;
       } else if (servedDate != null) {
-        conditionName = "If-Modified-Since";
+        conditionName = "If-Modified-Since"; //再次请求时告诉服务器上次获取到资源的时间
         conditionValue = servedDateString;
       } else {
         return new CacheStrategy(request, null); // No condition! Make a regular request.
